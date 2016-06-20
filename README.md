@@ -10,25 +10,25 @@ External libraries:               libx264 libfdk_aac libfreetype libfontconfig l
 Resulting ffmpeg binary License:  nonfree and unredistributable
 All contributions are welcome
 # mkffm-tiny
- This script will download and compile the smallest (but tested and working)
- static build of ffmpeg you could ever ask. All versions are hardcoded in the
- script for the moment. This may (or may not) change some time in the future.
- This script is tested and working fine on Debian 8 and Ubuntu 14.04 and up.
- The resulting binary is only good for one purpose: To grab my favorite shows
- from my DVB-T USB STICK to MP4 file for watching later, using CRON, a custom
- ffmpeg grabbing script and this tiny ffmpeg binary on my raspberry-pi.
- Features:
- Enabled programs:		ffmpeg ffprobe
- External libraries:	libfdk_aac libx264
- Enabled decoders:		aac ac3 dvbsub h264 libfdk_aac mp2 mp3 mpeg2video mpegvideo
- Enabled encoders:		libfdk_aac libx264
- Enabled hwaccels:		none
- Enabled parsers:		aac ac3 dvbsub h264 mpeg4video mpegaudio mpegvideo
- Enabled demuxers:		mpegts
- Enabled muxers:		mov mp4
- Enabled protocols:	file http tcp udp
- Enabled filters:		aformat anull aresample atrim format null overlay scale setpts trim
- Enabled bsfs:			none
- Enabled indevs:		none
- Enabled outdevs:		none
- License:				nonfree and unredistributable
+This script will download and compile the smallest (but tested and working)
+static build of ffmpeg you could ever ask. All external libs and supporting
+programs are pulled in from git, so expect the script to brake some times.
+This script is tested and working fine on Debian 8 and Ubuntu 14.04 and up.
+The resulting binary is only good for one purpose: To grab my favorite shows
+from my DVB-T USB STICK to MP4 file for watching later, using CRON, a custom
+ffmpeg grabbing script and this tiny ffmpeg binary on my raspberry-pi.
+Features:
+Enabled programs:		ffmpeg ffprobe
+External libraries:	libfdk_aac libx264
+Enabled decoders:		aac ac3 dvbsub h264 libfdk_aac mp2 mp3 mpeg2video mpegvideo
+Enabled encoders:		libfdk_aac libx264
+Enabled hwaccels:		none
+Enabled parsers:		aac ac3 dvbsub h264 mpeg4video mpegaudio mpegvideo
+Enabled demuxers:		mpegts
+Enabled muxers:		mov mp4
+Enabled protocols:	file http tcp udp
+Enabled filters:		aformat anull aresample atrim format null overlay scale setpts trim
+Enabled bsfs:			none
+Enabled indevs:		none
+Enabled outdevs:		none
+License:				nonfree and unredistributable
