@@ -1,0 +1,86 @@
+install prefix            /home/user/Desktop/ffmb
+source path               .
+C compiler                gcc
+C library                 glibc
+ARCH                      x86 (generic)
+big-endian                no
+runtime cpu detection     yes
+yasm                      yes
+MMX enabled               yes
+MMXEXT enabled            yes
+3DNow! enabled            yes
+3DNow! extended enabled   yes
+SSE enabled               yes
+SSSE3 enabled             yes
+AESNI enabled             yes
+AVX enabled               yes
+XOP enabled               yes
+FMA3 enabled              yes
+FMA4 enabled              yes
+i686 features enabled     yes
+CMOV is fast              yes
+EBX available             yes
+EBP available             yes
+debug symbols             no
+strip symbols             yes
+optimize for size         no
+optimizations             yes
+static                    yes
+shared                    no
+postprocessing support    yes
+new filter support        yes
+network support           yes
+threading support         pthreads
+safe bitstream reader     yes
+SDL support               no
+opencl enabled            no
+texi2html enabled         no
+perl enabled              yes
+pod2man enabled           yes
+makeinfo enabled          yes
+makeinfo supports HTML    yes
+
+Enabled programs:
+ffmpeg			   ffprobe
+
+External libraries:
+libfdk_aac		   libx264
+
+Enabled decoders:
+aac			   h264			      mp3
+ac3			   libfdk_aac		      mpeg2video
+dvbsub			   mp2			      mpegvideo
+
+Enabled encoders:
+libfdk_aac		   libx264
+
+Enabled hwaccels:
+
+Enabled parsers:
+aac			   h264			      mpegaudio
+ac3			   mpeg4video		      mpegvideo
+dvbsub
+
+Enabled demuxers:
+mpegts
+
+Enabled muxers:
+mov			   mp4
+
+Enabled protocols:
+file			   tcp			      udp
+http
+
+Enabled filters:
+aformat			   format		      scale
+anull			   null			      setpts
+aresample		   overlay		      trim
+atrim
+
+Enabled bsfs:
+
+Enabled indevs:
+
+Enabled outdevs:
+
+License: nonfree and unredistributable
