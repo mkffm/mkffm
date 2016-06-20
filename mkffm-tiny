@@ -1,0 +1,327 @@
+#!/bin/bash
+# Author: xXx
+# Date: Tuesday 31 Apr 2016 09:14 am
+# This script will download and compile the smallest (but tested and working)
+# static build of ffmpeg you could ever ask. All versions are hardcoded in the
+# script for the moment. This may (or may not) change some time in the future.
+# This script is tested and working fine on Debian 8 and Ubuntu 14.04 and up.
+# The resulting binary is only good for one purpose: To grab my favorite shows
+# from my DVB-T USB STICK to MP4 file for watching later, using CRON, a custom
+# ffmpeg grabbing script and this tiny ffmpeg binary on my raspberry-pi.
+# Features:
+# Enabled programs:		ffmpeg ffprobe
+# External libraries:	libfdk_aac libx264
+# Enabled decoders:		aac ac3 dvbsub h264 libfdk_aac mp2 mp3 mpeg2video mpegvideo
+# Enabled encoders:		libfdk_aac libx264
+# Enabled hwaccels:		none
+# Enabled parsers:		aac ac3 dvbsub h264 mpeg4video mpegaudio mpegvideo
+# Enabled demuxers:		mpegts
+# Enabled muxers:		mov mp4
+# Enabled protocols:	file http tcp udp
+# Enabled filters:		aformat anull aresample atrim format null overlay scale setpts trim
+# Enabled bsfs:			none
+# Enabled indevs:		none
+# Enabled outdevs:		none
+# License:				nonfree and unredistributable
+# All this can be changed easily to adapt this script to your needs.
+
+ffmpeg='http://ffmpeg.org/releases/ffmpeg-3.0.2.tar.bz2'
+
+chkconf(){
+if [ $? != 0 ];then
+echo $_R" Configuring $1 failed!"$_X
+exit 1
+else
+echo $_G" Configuring $1 success!"$_X
+fi
+}
+
+chkbuild(){
+if [ $? != 0 ];then
+echo $_R" Building $1 failed!"$_X
+exit 1
+else
+echo $_G" Building $1 success!"$_X
+fi
+}
+
+chkdown(){
+if [ $? != 0 ];then
+echo $_R" Downloading $1 failed!"$_X
+exit 1
+else
+echo $_G" Downloading $1 success!"$_X
+fi
+}
+
+source='ffms'
+binary='ffmb'
+outdir=$(pwd)
+logfil=$(pwd)/$(basename $0).log
+
+if [ -f $logfil ];then
+rm $logfil
+fi
+
+outbin=$(pwd)/ffbin
+
+export PATH="$outbin:$outdir/$binary/bin:$PATH"
+export PKG_CONFIG_PATH="$outdir/$binary/lib/pkgconfig"
+
+_Y="$(tput bold && tput setaf 3)"
+_G="$(tput bold && tput setaf 2)"
+_B="$(tput bold && tput setaf 4)"
+_R="$(tput bold && tput setaf 1)"
+_X="$(tput sgr0)"
+
+arr=(wget git gcc bzip2 autoconf automake make pkg-config libtool g++)
+for i in ${arr[@]};do
+if [ "$(which $i)" = "" ];then
+tput setaf 2
+echo $_R" Please install $i and try again."$_X
+tput sgr0
+exit 1
+fi
+done
+
+mkdir -p $outdir/$source
+
+echo $_Y'########## YASM ################################################################'$_X
+echo "################################################################################" &>>$logfil
+echo "########## YASM ################################################################" &>>$logfil
+echo "################################################################################" &>>$logfil
+if [ -f $outdir/$binary/bin/yasm ];then
+echo $_G" YASM already exists"$_X
+else
+cd $outdir/$source
+git clone https://github.com/yasm/yasm.git &>>$logfil
+chkdown YASM
+cd yasm
+./autogen.sh &>>$logfil
+./configure --prefix="$outdir/$binary" --disable-debug &>>$logfil
+chkconf YASM
+make &>>$logfil
+chkbuild YASM
+make install &>>$logfil
+make distclean &>>$logfil
+fi
+
+echo $_Y'########## LIBX264 #############################################################'$_X
+echo "################################################################################" &>>$logfil
+echo "########## LIBX264 #############################################################" &>>$logfil
+echo "################################################################################" &>>$logfil
+if [ -f $outdir/$binary/lib/pkgconfig/x264.pc ];then
+echo $_G" X264 already exists"$_X
+else
+cd $outdir/$source
+git clone https://git.videolan.org/git/x264.git &>>$logfil
+chkdown X264
+cd x264
+./configure --prefix="$outdir/$binary" --disable-cli --enable-static &>>$logfil
+chkconf X264
+make &>>$logfil
+chkbuild X264
+make install &>>$logfil
+make distclean &>>$logfil
+fi
+
+echo $_Y'########## LIBFDK_AAC ##########################################################'$_X
+echo "################################################################################" &>>$logfil
+echo "########## LIBFDK_AAC ##########################################################" &>>$logfil
+echo "################################################################################" &>>$logfil
+if [ -f $outdir/$binary/lib/pkgconfig/fdk-aac.pc ];then
+echo $_G" FDK already exists"$_X
+else
+cd $outdir/$source
+git clone https://github.com/mstorsjo/fdk-aac.git &>>$logfil
+chkdown LIBFDK_AAC
+cd fdk-aac
+./autogen.sh &>>$logfil
+./configure --prefix="$outdir/$binary" --disable-shared --enable-static &>>$logfil
+chkconf LIBFDK_AAC
+make &>>$logfil
+chkbuild LIBFDK_AAC
+make install &>>$logfil
+make distclean &>>$logfil
+fi
+
+echo $_Y'########## FFMPEG ##############################################################'$_X
+echo "################################################################################" &>>$logfil
+echo "########## FFMPEG ##############################################################" &>>$logfil
+echo "################################################################################" &>>$logfil
+cd $outdir/$source
+if [ ! -f $outdir/$source/ffmpeg.bz2 ];then
+wget -q -O ffmpeg.bz2 $ffmpeg
+chkdown FFMPEG
+tar xjf ffmpeg.bz2
+fi
+cd ffmpeg*
+./configure \
+--prefix="$outdir/$binary" \
+--pkg-config-flags="--static" \
+--extra-cflags="-I$outdir/$binary/include" \
+--extra-ldflags="-L$outdir/$binary/lib" \
+--bindir="$outbin" \
+--disable-extra-warnings \
+--disable-doc \
+--disable-ffplay \
+--disable-ffserver \
+--disable-debug \
+--disable-shared \
+--enable-static \
+--enable-libx264 \
+--enable-libfdk-aac \
+--enable-nonfree \
+--enable-gpl \
+--disable-avisynth \
+--disable-bzlib \
+--disable-chromaprint \
+--disable-fontconfig \
+--disable-frei0r \
+--disable-gcrypt \
+--disable-gmp \
+--disable-gnutls \
+--disable-iconv \
+--disable-ladspa \
+--disable-libass \
+--disable-libbluray \
+--disable-libbs2b \
+--disable-libcaca \
+--disable-libcelt \
+--disable-libcdio \
+--disable-libdc1394 \
+--disable-libdcadec \
+--disable-libfaac \
+--disable-libflite \
+--disable-libfreetype \
+--disable-libfribidi \
+--disable-libgme \
+--disable-libgsm \
+--disable-libiec61883 \
+--disable-libilbc \
+--disable-libkvazaar \
+--disable-libmfx \
+--disable-libmodplug \
+--disable-libmp3lame \
+--disable-libnut \
+--disable-libopencore-amrnb \
+--disable-libopencore-amrwb \
+--disable-libopencv \
+--disable-libopenh264 \
+--disable-libopenjpeg \
+--disable-libopus \
+--disable-libpulse \
+--disable-librubberband \
+--disable-librtmp \
+--disable-libschroedinger \
+--disable-libshine \
+--disable-libsmbclient \
+--disable-libsnappy \
+--disable-libsoxr \
+--disable-libspeex \
+--disable-libssh \
+--disable-libtesseract \
+--disable-libtheora \
+--disable-libtwolame \
+--disable-libutvideo \
+--disable-libv4l2 \
+--disable-libvidstab \
+--disable-libvo-amrwbenc \
+--disable-libvorbis \
+--disable-libvpx \
+--disable-libwavpack \
+--disable-libwebp \
+--disable-libx265 \
+--disable-libxavs \
+--disable-libxcb \
+--disable-libxcb-shm \
+--disable-libxcb-xfixes \
+--disable-libxcb-shape \
+--disable-libxvid \
+--disable-libzimg \
+--disable-libzmq \
+--disable-libzvbi \
+--disable-lzma \
+--disable-decklink \
+--disable-mmal \
+--disable-netcdf \
+--disable-nvenc \
+--disable-openal \
+--disable-opencl \
+--disable-opengl \
+--disable-openssl \
+--disable-schannel \
+--disable-sdl \
+--disable-securetransport \
+--disable-x11grab \
+--disable-xlib \
+--disable-zlib \
+--disable-vdpau \
+--disable-hwaccels \
+--disable-indevs \
+--disable-outdevs \
+--disable-bsfs \
+--disable-encoders \
+--enable-encoder=libfdk_aac \
+--enable-encoder=libx264 \
+--disable-decoders \
+--enable-decoder=aac \
+--enable-decoder=ac3 \
+--enable-decoder=h264 \
+--enable-decoder=libfdk_aac \
+--enable-decoder=mp2 \
+--enable-decoder=mp3 \
+--enable-decoder=mpeg2video \
+--enable-decoder=mpegvideo \
+--enable-decoder=dvbsub \
+--disable-muxers \
+--enable-muxer=mp4 \
+--disable-demuxers \
+--enable-demuxer=mpegts \
+--disable-filters \
+--enable-filter=scale \
+--enable-filter=overlay \
+--enable-filter=aresample \
+--disable-parsers \
+--enable-parser=aac \
+--enable-parser=ac3 \
+--enable-parser=dvbsub \
+--enable-parser=h264 \
+--enable-parser=mpegvideo \
+--enable-parser=mpeg4video \
+--enable-parser=mpegaudio \
+--disable-protocols \
+--enable-protocol=udp \
+--enable-protocol=http \
+--enable-protocol=file
+chkconf FFMPEG
+echo $_B" Building FFMPEG. Please wait..."$_X
+make &>>$logfil
+if [ $? = 0 ];then
+echo $_G" Building FFMPEG success!"$_X
+good=yes
+else
+echo $_R" Building FFMPEG failed!"$_X
+good=no
+fi
+make install &>>$logfil
+make distclean &>>$logfil
+if [ "$good" = "yes" ];then
+echo $_Y" Building FFMPEG finished."
+echo " Your binaries should be in $outbin"$_X
+echo $_B" You can safely delete:"$_X
+echo $_G" $outdir/$source"$_X
+echo $_G" $outdir/$binary"$_X
+echo $_B" unless you want to build again sometime."$_X
+if [ "$(pgrep Xorg)" != "" ];then
+if [ "$(which xdg-open)" != "" ];then
+xdg-open $outbin
+else
+ls -lh $outbin
+fi
+else
+ls -lh $outbin
+fi
+else
+echo $_R" Something went wrong while building FFMPEG..."$_X
+fi
