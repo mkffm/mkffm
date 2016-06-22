@@ -1,9 +1,9 @@
 Note: If development files for libsdl-1.2 is installed, the script
 will also build ffplay along with ffmpeg and ffprobe binaries.
 Here follows the output from ffmpeg's configure script execution,
-as done by mkffm-small script:
+as done by mkffm-small script on my "dev" clean environment:
 
-install prefix            /home/user/Desktop/BUILD/ffmb
+install prefix            /home/xxx/Desktop/BUILD/ffmb
 source path               .
 C compiler                gcc
 C library                 glibc
