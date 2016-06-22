@@ -1,20 +1,24 @@
 #!/bin/bash
 # Author: xXx
-# Date: Wednesday 15 Jun 2016 21:14
+# Date: Wednesday 22 Jun 2016 17:26
 # This script will download and compile a small (but tested and working) static
 # build of ffmpeg. All dependant external libraries versions are hardcoded in 
 # the script for the moment. This may (but rather not) change some time.
+# Cloning dependant libraries and support programs from git is known to break
+# build process at times. This is why i use hardcoded versions.
 # This script is tested and working fine on Debian 8.x and Ubuntu 14.04 and up.
+# Note: libfreetype and libass is built with all optional supporting libraries
+# and programs (zlib bzip2 libpng harfbuzz).
 # Make sure to run the script in a clean environment from "-dev" packages in
 # order to ensure the staticness of the binary and its portability.
 # If you want ffplay install the libsdl1.2 dev package of your distro, and what
-# this brings along, but nothing more.
+# this brings along, but nothing more "dev" related.
 #
 # Features:
 # Enabled programs:		ffmpeg ffprobe (ffplay if sdl1.2 exists)
 # External libraries:	libx264 libfdk_aac libfreetype libfontconfig libass
 # License:				nonfree and unredistributable
-# All this can be changed easily to adapt this script to your needs.
+# Some of this can be changed easily to adapt this script to your needs.
 
 yasm='http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz'
 x264='http://download.videolan.org/pub/videolan/x264/snapshots/last_stable_x264.tar.bz2'
@@ -22,12 +26,12 @@ fdk='http://downloads.sourceforge.net/opencore-amr/fdk-aac-0.1.4.tar.gz'
 zlib='http://zlib.net/zlib-1.2.8.tar.gz'
 bzip2='http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz'
 libpng='http://download.sourceforge.net/libpng/libpng-1.6.23.tar.gz'
-ragel='http://www.colm.net/files/ragel/ragel-6.9.tar.gz'
-harfbuzz='http://www.freedesktop.org/software/harfbuzz/release/harfbuzz-1.2.7.tar.bz2'
 freetype='http://downloads.sourceforge.net/freetype/freetype-2.6.3.tar.bz2'
 fribidi='http://fribidi.org/download/fribidi-0.19.7.tar.bz2'
 expat='http://downloads.sourceforge.net/expat/expat-2.1.0.tar.gz'
 fontconfig='http://www.freedesktop.org/software/fontconfig/release/fontconfig-2.11.1.tar.bz2'
+ragel='http://www.colm.net/files/ragel/ragel-6.9.tar.gz'
+harfbuzz='http://www.freedesktop.org/software/harfbuzz/release/harfbuzz-1.2.7.tar.bz2'
 libass='https://github.com/libass/libass/releases/download/0.13.2/libass-0.13.2.tar.xz'
 ffmpeg='http://ffmpeg.org/releases/ffmpeg-3.0.2.tar.bz2'
 
@@ -80,7 +84,7 @@ exit 1
 fi
 done
 mkdir -p $outdir/$source
-echo $_Y'########## YASM (NEEDED FOR BUILDING FFMPEG) ##################################'$_X
+echo $_Y'########## YASM (NEEDED FOR BUILDING FFMPEG) ###################################'$_X
 echo "################################################################################" &>>$logfil
 echo "########## YASM ################################################################" &>>$logfil
 echo "################################################################################" &>>$logfil
@@ -100,7 +104,7 @@ make install &>>$logfil
 make distclean &>>$logfil
 fi
 
-echo $_Y'########## LIBX264 (ADDS SUPPORT) #############################################'$_X
+echo $_Y'########## LIBX264 (ADDS SUPPORT) ##############################################'$_X
 echo "################################################################################" &>>$logfil
 echo "########## LIBX264 #############################################################" &>>$logfil
 echo "################################################################################" &>>$logfil
@@ -120,7 +124,7 @@ make install &>>$logfil
 make distclean &>>$logfil
 fi
 
-echo $_Y'########## LIBFDK_AAC (ADDS SUPPORT) ##########################################'$_X
+echo $_Y'########## LIBFDK_AAC (ADDS SUPPORT) ###########################################'$_X
 echo "################################################################################" &>>$logfil
 echo "########## LIBFDK_AAC ##########################################################" &>>$logfil
 echo "################################################################################" &>>$logfil
@@ -140,7 +144,7 @@ make install &>>$logfil
 make distclean &>>$logfil
 fi
 
-echo $_Y'########## ZLIB (NEEDED FOR FREETYPE) #########################################'$_X
+echo $_Y'########## ZLIB (NEEDED FOR FREETYPE) ##########################################'$_X
 echo "################################################################################" &>>$logfil
 echo "########## ZLIB ################################################################" &>>$logfil
 echo "################################################################################" &>>$logfil
@@ -160,7 +164,7 @@ make install &>>$logfil
 make distclean &>>$logfil
 fi
 
-echo $_Y'########## BZIP2 (NEEDED FOR FREETYPE) ########################################'$_X
+echo $_Y'########## BZIP2 (NEEDED FOR FREETYPE) #########################################'$_X
 echo "################################################################################" &>>$logfil
 echo "########## BZIP2 ###############################################################" &>>$logfil
 echo "################################################################################" &>>$logfil
@@ -178,7 +182,7 @@ make install PREFIX=$outdir/$binary &>>$logfil
 make distclean &>>$logfil
 fi
 
-echo $_Y'########## LIBPNG (NEEDED FOR FREETYPE) #######################################'$_X
+echo $_Y'########## LIBPNG (NEEDED FOR FREETYPE) ########################################'$_X
 echo "################################################################################" &>>$logfil
 echo "########## LIBPNG ##############################################################" &>>$logfil
 echo "################################################################################" &>>$logfil
@@ -190,7 +194,8 @@ wget -q -O libpng.tgz $libpng
 chkdown LIBPNG
 tar xf libpng.tgz
 cd libpng-1.6.23
-./configure CPPFLAGS="-I$outdir/$binary/include" LDFAGS="-L$outdir/$binary/lib" LIBS="-L$outdir/$binary/lib" --prefix=$outdir/$binary --disable-shared --enable-static \
+./configure CPPFLAGS="-I$outdir/$binary/include" LDFAGS="-L$outdir/$binary/lib" LIBS="-L$outdir/$binary/lib" \
+--prefix=$outdir/$binary --disable-shared --enable-static \
 --with-zlib-prefix=$outdir/$binary --with-pkgconfigdir=$outdir/$binary/lib/pkgconfig &>>$logfil
 chkconf LIBPNG
 make &>>$logfil
@@ -199,7 +204,7 @@ make install PREFIX=$outdir/$binary &>>$logfil
 make distclean &>>$logfil
 fi
 
-echo $_Y'########## FREETYPE (ADDS SUPPORT) ############################################'$_X
+echo $_Y'########## FREETYPE (ADDS SUPPORT) #############################################'$_X
 echo "################################################################################" &>>$logfil
 echo "########## FREETYPE ############################################################" &>>$logfil
 echo "################################################################################" &>>$logfil
@@ -211,7 +216,8 @@ wget -q -O freetype.bz2 $freetype
 chkdown FREETYPE
 tar xf freetype.bz2
 cd freetype-2.6.3
-./configure CPPFLAGS="-I$outdir/$binary/include" LDFAGS="-L$outdir/$binary/lib" LIBS="-L$outdir/$binary/lib" --prefix="$outdir/$binary" --disable-shared --enable-static &>>$logfil
+./configure CPPFLAGS="-I$outdir/$binary/include" LDFAGS="-L$outdir/$binary/lib" LIBS="-L$outdir/$binary/lib" \
+--prefix="$outdir/$binary" --disable-shared --enable-static &>>$logfil
 chkconf FREETYPE
 make &>>$logfil
 chkbuild FREETYPE
@@ -219,7 +225,7 @@ make install &>>$logfil
 make distclean &>>$logfil
 fi
 
-echo $_Y'########## FRIBIDI (NEEDED FOR FONTCONFIG) ####################################'$_X
+echo $_Y'########## FRIBIDI (NEEDED FOR FONTCONFIG) #####################################'$_X
 echo "################################################################################" &>>$logfil
 echo "########## FRIBIDI #############################################################" &>>$logfil
 echo "################################################################################" &>>$logfil
@@ -230,7 +236,7 @@ cd $outdir/$source
 wget -q -O fribidi.bz2 $fribidi
 chkdown FRIBIDI
 tar xf fribidi.bz2
-cd fribidi-*
+cd fribidi-0.19.7
 ./configure --prefix="$outdir/$binary" --disable-deprecated --disable-debug --disable-shared --enable-static &>>$logfil
 chkconf FRIBIDI
 make &>>$logfil
@@ -239,7 +245,7 @@ make install &>>$logfil
 make distclean &>>$logfil
 fi
 
-echo $_Y'########## EXPAT (NEEDED FOR FONTCONFIG) ######################################'$_X
+echo $_Y'########## EXPAT (NEEDED FOR FONTCONFIG) #######################################'$_X
 echo "################################################################################" &>>$logfil
 echo "########## EXPAT ###############################################################" &>>$logfil
 echo "################################################################################" &>>$logfil
@@ -250,7 +256,7 @@ cd $outdir/$source
 wget -q -O expat.tgz $expat
 chkdown EXPAT
 tar xf expat.tgz
-cd expat*
+cd expat-2.1.0
 ./configure --prefix="$outdir/$binary" --disable-shared --enable-static &>>$logfil
 chkconf EXPAT
 make &>>$logfil
@@ -259,7 +265,7 @@ make install &>>$logfil
 make distclean &>>$logfil
 fi
 
-echo $_Y'########## FONTCONFIG (ADDS SUPPORT) ##########################################'$_X
+echo $_Y'########## FONTCONFIG (ADDS SUPPORT) ###########################################'$_X
 echo "################################################################################" &>>$logfil
 echo "########## FONTCONFIG ##########################################################" &>>$logfil
 echo "################################################################################" &>>$logfil
@@ -270,13 +276,76 @@ cd $outdir/$source
 wget -q -O fontconfig.bz2 $fontconfig
 chkdown FONTCONFIG
 tar xf fontconfig.bz2
-cd fontconfig-*
-./configure CPPFLAGS="-I$outdir/$binary/include" LDFAGS="-L$outdir/$binary/lib" LIBS="-L$outdir/$binary/lib" --prefix="$outdir/$binary" --disable-docs --disable-shared --enable-static &>>$logfil
+cd fontconfig-2.11.1
+./configure CPPFLAGS="-I$outdir/$binary/include" LDFAGS="-L$outdir/$binary/lib" LIBS="-L$outdir/$binary/lib" \
+--prefix="$outdir/$binary" --disable-docs --disable-shared --enable-static &>>$logfil
 chkconf FONTCONFIG
 make &>>$logfil
 chkbuild FONTCONFIG
 make install &>>$logfil
 make distclean &>>$logfil
+fi
+
+echo $_Y'########## RAGEL (NEEDED FOR BUILDING HARFBUZZ) ################################'$_X
+echo "################################################################################" &>>$logfil
+echo "########## RAGEL ###############################################################" &>>$logfil
+echo "################################################################################" &>>$logfil
+if [ -f $outdir/$binary/bin/ragel ];then
+echo $_G" RAGEL already exists"$_X
+else
+cd $outdir/$source
+wget -q -O ragel.tgz $ragel
+chkdown RAGEL
+tar xf ragel.tgz
+cd ragel-6.9
+./configure --prefix="$outdir/$binary"  &>>$logfil
+chkconf RAGEL
+make &>>$logfil
+chkbuild RAGEL
+make install &>>$logfil
+make distclean &>>$logfil
+fi
+
+echo $_Y'########## HARFBUZZ (NEEDED FOR FREETYPE) ######################################'$_X
+echo "################################################################################" &>>$logfil
+echo "########## HARFBUZZ ############################################################" &>>$logfil
+echo "################################################################################" &>>$logfil
+if [ -f $outdir/$binary/lib/pkgconfig/harfbuzz.pc ];then
+echo $_G" HARFBUZZ already exists"$_X
+else
+cd $outdir/$source
+wget -q -O harfbuzz.tgz $harfbuzz
+chkdown HARFBUZZ
+tar xf harfbuzz.tgz
+cd harfbuzz-1.2.7
+./configure --prefix="$outdir/$binary" --disable-shared --enable-static &>>$logfil
+chkconf HARFBUZZ
+make &>>$logfil
+chkbuild HARFBUZZ
+make install &>>$logfil
+make distclean &>>$logfil
+fi
+
+echo $_Y'########## FREETYPE (WITH HARFBUZZ) ############################################'$_X
+echo "################################################################################" &>>$logfil
+echo "########## FREETYPE ############################################################" &>>$logfil
+echo "################################################################################" &>>$logfil
+if [ -f $outdir/$binary/lib/pkgconfig/fthb ];then
+echo $_G" FREETYPE with HARFBUZZ already exists"$_X
+else
+cd $outdir/$source
+wget -q -O freetype.bz2 $freetype
+chkdown FREETYPE
+tar xf freetype.bz2
+cd freetype-2.6.3
+./configure CPPFLAGS="-I$outdir/$binary/include" LDFAGS="-L$outdir/$binary/lib" LIBS="-L$outdir/$binary/lib" \
+--prefix="$outdir/$binary" --disable-shared --enable-static &>>$logfil
+chkconf FREETYPE
+make &>>$logfil
+chkbuild FREETYPE
+make install &>>$logfil
+make distclean &>>$logfil
+touch $outdir/$binary/lib/pkgconfig/fthb
 fi
 
 echo $_Y'########## LIBASS (ADDS SUPPORT) ###############################################'$_X
@@ -299,9 +368,9 @@ make install &>>$logfil
 make distclean &>>$logfil
 fi
 
-echo $_Y'################################### FFMPEG ####################################'$_X
+echo $_Y'########## FFMPEG ##############################################################'$_X
 echo "################################################################################" &>>$logfil
-echo "#################################### FFMPEG ####################################" &>>$logfil
+echo "########## FFMPEG ##############################################################" &>>$logfil
 echo "################################################################################" &>>$logfil
 cd $outdir/$source
 if [ ! -f $outdir/$source/ffmpeg.bz2 ];then
@@ -309,7 +378,7 @@ wget -q -O ffmpeg.bz2 $ffmpeg
 chkdown FFMPEG
 tar xjf ffmpeg.bz2
 fi
-cd ffmpeg-*
+cd ffmpeg-3.0.2
 ./configure \
 --prefix="$outdir/$binary" \
 --pkg-config-flags="--static" \
